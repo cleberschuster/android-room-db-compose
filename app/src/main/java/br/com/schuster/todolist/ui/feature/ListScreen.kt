@@ -23,17 +23,23 @@ import br.com.schuster.todolist.ui.components.TaskItem
 import br.com.schuster.todolist.ui.theme.TaskListTheme
 
 @Composable
-fun ListScreen() {
-    ListContent(tasks = emptyList())
+fun ListScreen(
+    navigateToAddOrEditScreen: (Long?) -> Unit
+) {
+    ListContent(
+        tasks = emptyList(),
+        onAddItemClick = navigateToAddOrEditScreen
+    )
 }
 
 @Composable
 fun ListContent(
-    tasks: List<Task>
+    tasks: List<Task>,
+    onAddItemClick: (id: Long?) -> Unit,
 ) {
     Scaffold (
         floatingActionButton = {
-            FloatingActionButton(onClick = { }) {
+            FloatingActionButton(onClick = { onAddItemClick(null) }) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
         }
@@ -67,7 +73,8 @@ private fun ListContentPreview() {
                 todo1,
                 todo2,
                 todo3
-            )
+            ),
+            onAddItemClick = {}
         )
     }
 }

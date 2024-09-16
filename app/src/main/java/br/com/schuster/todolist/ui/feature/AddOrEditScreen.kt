@@ -21,7 +21,7 @@ import br.com.schuster.todolist.ui.theme.TaskListTheme
 
 @Composable
 fun AddOrEditScreen() {
-
+    AddOrEditContentScreen()
 }
 
 @Composable
