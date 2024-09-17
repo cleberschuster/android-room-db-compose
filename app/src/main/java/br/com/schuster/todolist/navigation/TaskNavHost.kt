@@ -5,8 +5,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import br.com.schuster.todolist.ui.feature.AddOrEditScreen
-import br.com.schuster.todolist.ui.feature.ListScreen
+import br.com.schuster.todolist.ui.feature.addoredit.AddOrEditScreen
+import br.com.schuster.todolist.ui.feature.list.ListScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -34,7 +34,12 @@ fun TaskNavHost() {
 
         composable<AddOrEditScreenRoute> { navBackStackEntry ->
             val addOrEditScreenRoute = navBackStackEntry.toRoute<AddOrEditScreenRoute>()
-            AddOrEditScreen()
+            AddOrEditScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                },
+                id = addOrEditScreenRoute.id
+            )
         }
     }
 }

@@ -16,7 +16,7 @@ abstract class TaskDatabase : RoomDatabase() {
 
 }
 
-object TodoDatabaseProvider {
+object TaskDatabaseProvider {
 
     @Volatile
     private var INSTANCE: TaskDatabase? = null

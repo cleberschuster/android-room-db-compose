@@ -1,4 +1,4 @@
-package br.com.schuster.todolist.ui.feature
+package br.com.schuster.todolist.ui.feature.list
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -12,13 +12,22 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.schuster.todolist.data.TaskDatabaseProvider
+import br.com.schuster.todolist.data.TaskRepositoryImpl
 import br.com.schuster.todolist.domain.Task
 import br.com.schuster.todolist.domain.todo1
 import br.com.schuster.todolist.domain.todo2
 import br.com.schuster.todolist.domain.todo3
+import br.com.schuster.todolist.navigation.AddOrEditScreenRoute
+import br.com.schuster.todolist.ui.UiEvent
 import br.com.schuster.todolist.ui.components.TaskItem
 import br.com.schuster.todolist.ui.theme.TaskListTheme
 
@@ -26,20 +35,52 @@ import br.com.schuster.todolist.ui.theme.TaskListTheme
 fun ListScreen(
     navigateToAddOrEditScreen: (Long?) -> Unit
 ) {
+
+    val context = LocalContext.current.applicationContext
+    val database = TaskDatabaseProvider.provide(context)
+    val repository = TaskRepositoryImpl(
+        dao = database.taskDao)
+
+    val viewModel = viewModel<ListViewModel> {
+        ListViewModel(
+            repository = repository
+        )
+    }
+
+    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { uiEvent ->
+            when (uiEvent) {
+                is UiEvent.ShowSnackbar -> {}
+
+                UiEvent.NavigateBack -> {}
+
+                is UiEvent.NavigateToRoute<*> -> {
+                    when (uiEvent.route) {
+                        is AddOrEditScreenRoute -> {
+                            navigateToAddOrEditScreen(uiEvent.route.id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     ListContent(
-        tasks = emptyList(),
-        onAddItemClick = navigateToAddOrEditScreen
+        tasks = tasks,
+        onEvent = viewModel::onEvent
     )
 }
 
 @Composable
 fun ListContent(
     tasks: List<Task>,
-    onAddItemClick: (id: Long?) -> Unit,
+    onEvent: (ListEvent) -> Unit
 ) {
     Scaffold (
         floatingActionButton = {
-            FloatingActionButton(onClick = { onAddItemClick(null) }) {
+            FloatingActionButton(onClick = { onEvent(ListEvent.AddOrEditTask(null)) }) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
         }
@@ -51,9 +92,15 @@ fun ListContent(
             itemsIndexed(tasks) { index, item ->
                 TaskItem(
                     task = item,
-                    onDoneChange = {},
-                    onItemClick = {},
-                    onDeleteClick = {}
+                    onDoneChange = {
+                        onEvent(ListEvent.OnDoneChange(item.id, it))
+                    },
+                    onItemClick = {
+                        onEvent(ListEvent.AddOrEditTask(item.id))
+                    },
+                    onDeleteClick = {
+                        onEvent(ListEvent.DeleteTask(item.id))
+                    }
                 )
 
                 if (index < tasks.lastIndex) {
@@ -74,7 +121,7 @@ private fun ListContentPreview() {
                 todo2,
                 todo3
             ),
-            onAddItemClick = {}
+            onEvent = {}
         )
     }
 }
