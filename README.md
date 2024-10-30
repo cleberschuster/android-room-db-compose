@@ -1,1 +1,1 @@
-App com foco na utilização do Room Db
+App com foco na implementação do Room Db
